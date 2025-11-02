@@ -20,11 +20,11 @@ pipeline {
             steps {
                 echo "🚀 Deploying to EC2 instance..."
                 sh '''
-                ssh -o StrictHostKeyChecking=no -i /var/jenkins_home/.ssh/ecs-key.pem ubuntu@3.7.70.50 '
-                    sudo rm -rf ~/app &&
+                ssh -o StrictHostKeyChecking=no -i /var/jenkins_home/.ssh/ecs-key.pem ubuntu@3.7.70.50 "
+                    rm -rf ~/app &&
                     mkdir ~/app
-                '
-                scp -o StrictHostKeyChecking=no -i /var/jenkins_home/.ssh/ecs-key.pem -r Jenkinsfile app.py requirements.txt ubuntu@3.7.70.50:~/app
+                "
+                scp -o StrictHostKeyChecking=no -i /var/jenkins_home/.ssh/ecs-key.pem -r app.py requirements.txt ubuntu@3.7.70.50:~/app
                 '''
             }
         }
@@ -33,10 +33,15 @@ pipeline {
             steps {
                 echo "♻️ Restarting Python app..."
                 sh '''
-                ssh -i /var/jenkins_home/.ssh/ecs-key.pem ubuntu@3.7.70.50 '
-                    pkill -f app.py || true
-                    nohup python3 ~/app/app.py > app.log 2>&1 &
-                '
+                ssh -i /var/jenkins_home/.ssh/ecs-key.pem ubuntu@3.7.70.50 "
+                    cd ~/app &&
+                    python3 -m venv venv &&
+                    source venv/bin/activate &&
+                    pip install --upgrade pip &&
+                    pip install flask &&
+                    pkill -f app.py || true &&
+                    nohup venv/bin/python app.py > app.log 2>&1 &
+                "
                 '''
             }
         }
@@ -44,10 +49,10 @@ pipeline {
 
     post {
         success {
-            echo '✅ Deployment successful!'
+            echo "✅ Deployment successful!"
         }
         failure {
-            echo '❌ Deployment failed!'
+            echo "❌ Deployment failed!"
         }
     }
 }
