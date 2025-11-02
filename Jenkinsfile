@@ -50,9 +50,35 @@ pipeline {
     post {
         success {
             echo "✅ Deployment successful!"
+            emailext(
+                to: 'gayathrikomma309@gmail.com',
+                subject: "✅ SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                body: """
+                Hi Gayathri,
+
+                The build for job '${env.JOB_NAME}' (build #${env.BUILD_NUMBER}) succeeded!
+                Check details at: ${env.BUILD_URL}
+
+                Regards,
+                Jenkins
+                """
+            )
         }
         failure {
             echo "❌ Deployment failed!"
+            emailext(
+                to: 'gayathrikomma309@gmail.com',
+                subject: "❌ FAILURE: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                body: """
+                Hi Gayathri,
+
+                The build for job '${env.JOB_NAME}' (build #${env.BUILD_NUMBER}) failed.
+                Check the console output for details: ${env.BUILD_URL}
+
+                Regards,
+                Jenkins
+                """
+            )
         }
     }
 }
